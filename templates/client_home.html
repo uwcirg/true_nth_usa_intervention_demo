@@ -2,12 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Demo Intervention</title>
+  <title>Patient and Caregiver Self-Management (demo)</title>
 </head>
 <body>
-  <h2>Demo Intervention</h2>
+  <h2>Patient and Caregiver Self-Management (demo)</h2>
+
+<p>This True Nth site provides feedback reports to patients and their caregivers summarizing their Quality of Life ("QOL") progress, 
+and putting this progress in the context of hundreds or thousands of men with similar demographic, clinical, and treatment profiles, 
+thereby allowing them to determine whether their recovery is on the expected trajectory or not. 
+The site will provide coaching related to known established self-management strategies that may benefit patients with bothersome 
+symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
+(e.g., for sexual rehabilitation, exercise intervention, or social support) <i>text adapted from proposal language</i></p>
 
 {% if data %}
+You've indicated that you have a prostate cancer staging of [insert TNM text retrieved from clinical service call] 
+and a Gleason score of [insert Gleason text retrieved from clinical service call]. 
+<i>This is simply a demonstration of an intervention calling a portal service to retrieve a patient's data.</i>
 <p> Data From Protected API call:</p>
 <table>
 {% for key, value in data.iteritems() %}
