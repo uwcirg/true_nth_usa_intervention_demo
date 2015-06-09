@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Demo Intervention</title>
+</head>
+<body>
+  <h2>Demo Intervention</h2>
+
+{% if data %}
+<p> Data From Protected API call:</p>
+<table>
+{% for key, value in data.iteritems() %}
+<tr>
+   <th> {{ key }} </th>
+   <td> {{ value }} </td>
+</tr>
+{% endfor %}
+</table>
+<p>Assessment count: {{ assessments['count'] }}</p>
+{% endif %}
+
+</body>
+</html>
