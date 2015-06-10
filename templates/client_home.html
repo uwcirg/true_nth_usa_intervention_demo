@@ -1,34 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta http-equiv="x-ua-compatible" content="IE=edge">
   <title>Patient and Caregiver Self-Management (demo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="../static/css/true-nth-base.css">
 </head>
 <body>
-  <h2>Patient and Caregiver Self-Management (demo)</h2>
 
-<p>This True Nth site provides feedback reports to patients and their caregivers summarizing their Quality of Life ("QOL") progress, 
-and putting this progress in the context of hundreds or thousands of men with similar demographic, clinical, and treatment profiles, 
-thereby allowing them to determine whether their recovery is on the expected trajectory or not. 
-The site will provide coaching related to known established self-management strategies that may benefit patients with bothersome 
-symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
-(e.g., for sexual rehabilitation, exercise intervention, or social support) <i>text adapted from proposal language</i></p>
+<div class="container content-container">
+	<div class="row">
+		<div class="col-xs-12">
+		  <h2>Patient and Caregiver Self-Management (demo)</h2>
 
-{% if data %}
-You've indicated that you have a prostate cancer staging of [insert TNM text retrieved from clinical service call] 
-and a Gleason score of [insert Gleason text retrieved from clinical service call]. 
-<i>This is simply a demonstration of an intervention calling a portal service to retrieve a patient's data.</i>
-<p> Data From Protected API call:</p>
-<table>
-{% for key, value in data.iteritems() %}
-<tr>
-   <th> {{ key }} </th>
-   <td> {{ value }} </td>
-</tr>
-{% endfor %}
-</table>
-<p>Assessment count: {{ assessments['count'] }}</p>
-{% endif %}
+			<p>This True Nth site provides feedback reports to patients and their caregivers summarizing their Quality of Life ("QOL") progress, 
+			and putting this progress in the context of hundreds or thousands of men with similar demographic, clinical, and treatment profiles, 
+			thereby allowing them to determine whether their recovery is on the expected trajectory or not. 
+			The site will provide coaching related to known established self-management strategies that may benefit patients with bothersome 
+			symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
+			(e.g., for sexual rehabilitation, exercise intervention, or social support) <i>text adapted from proposal language</i></p>
 
+			{% if data %}
+			You've indicated that you have a prostate cancer staging of [insert TNM text retrieved from clinical service call] 
+			and a Gleason score of [insert Gleason text retrieved from clinical service call]. 
+			<i>This is simply a demonstration of an intervention calling a portal service to retrieve a patient's data.</i>
+			<p> Data From Protected API call:</p>
+			<table class="table">
+			{% for key, value in data.iteritems() %}
+			<tr>
+			   <th> {{ key }} </th>
+			   <td> {{ value }} </td>
+			</tr>
+			{% endfor %}
+			</table>
+			<p>Assessment count: {{ assessments['count'] }}</p>
+			{% endif %}
+		</div>
+	</div>
+</div>	
 </body>
 </html>

@@ -1,0 +1,123 @@
+/**
+ * Compiled styles for TrueNth USA
+ * See LESS file for details.
+ * Created by University of Washington CIRG
+ **/
+
+html {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: #444444;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+body {
+  background-color: #a6a9a7;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.428571429;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #543e36;
+}
+h1,
+h2 {
+  border-bottom: 1px solid;
+  padding-bottom: 3px;
+}
+a {
+  color: #5e7b3a;
+  text-decoration: none;
+}
+a:hover,
+a:focus {
+  color: #364721;
+  text-decoration: underline;
+}
+/*** Styles for demo page **/
+.content-container {
+  width: 1170px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  overflow: auto;
+  padding: 15px;
+}
+.header {
+  width: 100%;
+  background-color: #ffffff;
+  border-bottom: 2px solid #8D8D8D;
+}
+.header > .content-container {
+  background-color: #ffffff;
+  padding: 5px;
+}
+.header .header-wrap {
+  padding: 5px;
+}
+.basic-btn {
+  display: inline-block;
+  padding: 6px 12px;
+  margin-bottom: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  -ms-touch-action: manipulation;
+  touch-action: manipulation;
+  cursor: pointer;
+  background-image: none;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+.btn-tnth-primary {
+  color: #fff;
+  background-color: #3d6548;
+  border-color: #33553d;
+  transition: all 0.3s ease-in-out 0s;
+  -webkit-transition: all 0.3s ease-in-out 0s;
+}
+.btn-tnth-primary:hover,
+.btn-tnth-primary:focus,
+.btn-tnth-primary:active,
+.btn-tnth-primary.active,
+.open > .dropdown-toggle.btn-tnth-primary {
+  color: #fff;
+  background-color: #2a4531;
+  border-color: #1c2f21;
+}
+.btn-tnth-primary:active,
+.btn-tnth-primary.active,
+.open > .dropdown-toggle.btn-tnth-primary {
+  background-image: none;
+}
+.btn-tnth-primary.disabled,
+.btn-tnth-primary[disabled],
+fieldset[disabled] .btn-tnth-primary,
+.btn-tnth-primary.disabled:hover,
+.btn-tnth-primary[disabled]:hover,
+fieldset[disabled] .btn-tnth-primary:hover,
+.btn-tnth-primary.disabled:focus,
+.btn-tnth-primary[disabled]:focus,
+fieldset[disabled] .btn-tnth-primary:focus,
+.btn-tnth-primary.disabled:active,
+.btn-tnth-primary[disabled]:active,
+fieldset[disabled] .btn-tnth-primary:active,
+.btn-tnth-primary.disabled.active,
+.btn-tnth-primary[disabled].active,
+fieldset[disabled] .btn-tnth-primary.active {
+  background-color: #3d6548;
+  border-color: #33553d;
+}
+.btn-tnth-primary .badge {
+  color: #33553d;
+  background-color: #fff;
+}
+
+
+
