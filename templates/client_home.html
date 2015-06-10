@@ -37,17 +37,6 @@
 			and a Gleason score of {{clinical["Gleason-score"]}}.</p>
 			
             <p><i>This is simply a demonstration of an intervention calling a portal service to retrieve a patient's data.</i></p>
-			
-            <p> Data From Protected API call:</p>
-			<table class="table">
-			{% for key, value in user.iteritems() %}
-			<tr>
-			   <th> {{ key }} </th>
-			   <td> {{ value }} </td>
-			</tr>
-			{% endfor %}
-			</table>
-			<p>Assessment count: {{ assessments['count'] }}</p>
 			{% endif %}
 		</div>
 	</div>
