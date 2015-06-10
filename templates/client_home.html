@@ -32,12 +32,10 @@
 			symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
 			(e.g., for sexual rehabilitation, exercise intervention, or social support) <i>text adapted from proposal language</i></p>
 
-            {% if user %}
-            <p>You've indicated that you have a prostate cancer staging of {{clinical["TNM-Condition-stage"]["summary"]}} 
-			and a Gleason score of {{clinical["Gleason-score"]}}.</p>
+            <p>You've indicated that you have a prostate cancer staging of <b>{{clinical["TNM-Condition-stage"]["summary"]}}</b> 
+			and a Gleason score of <b>{{clinical["Gleason-score"]}}</b>.</p>
 			
             <p><i>This is simply a demonstration of an intervention calling a portal service to retrieve a patient's data.</i></p>
-			{% endif %}
 		</div>
 	</div>
 </div>	

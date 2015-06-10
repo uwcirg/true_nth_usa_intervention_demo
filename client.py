@@ -1,4 +1,5 @@
-from flask import Flask, url_for, session, request, jsonify, redirect, render_template
+from flask import Flask, url_for, session, request, jsonify
+from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
 
 app = Flask(__name__, template_folder='templates')
@@ -19,22 +20,14 @@ remote = oauth.remote_app(
 
 @app.route('/')
 def index():
-    # TODO: Need to validate remote_oauth - problems w/ expired
     if 'remote_oauth' in session:
-        me = remote.get('me')
-        assessments = remote.get('assessments')
         clinical = remote.get('clinical')
-        
-	return render_template(
-        'client_home.html',
-        PORTAL=app.config['PORTAL'],
-        user=me.data,
-        assessments=assessments.data,
-        clinical=clinical.data,
-    )
+        if clinical.status == 200: 
+	    return render_template('client_home.html',
+                PORTAL=app.config['PORTAL'], clinical=clinical.data)
 
-    # Without 'remote_oauth' in session, we haven't yet authorized
-    # this intervention as an OAuth client to the Portal.  Do so now:
+    # Still here means we need to (re)authorize this intervention as an
+    # OAuth client to the Portal.
     next_url = request.args.get('next') or request.referrer or request.url
     return remote.authorize(
         callback=url_for('authorized', next=next_url, _external=True)
@@ -50,7 +43,6 @@ def authorized():
             request.args['error_description']
         )
     session['remote_oauth'] = (resp['access_token'], '')
-    #return jsonify(oauth_token=resp['access_token'])
     return redirect('/')
 
 @remote.tokengetter
