@@ -45,8 +45,11 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script src="http://truenth-demo.cirg.washington.edu:5000/static/js/topnav.js"></script>
 <script>
-/*** TODO - Temporary nav location, will need to be updated **/
-PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html/{{ username }}";
+PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html";
+{% if username %}
+    PORTAL_NAV_PAGE = PORTAL_NAV_PAGE + '/{{ username }}';
+{% endif %}
+
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
