@@ -27,6 +27,9 @@ def index():
         #return jsonify(resp.data)
 	return render_template('client_home.html', data=resp.data,
 	    assessments=resp2.data)
+
+    # Without 'remote_oauth' in session, we haven't yet authorized
+    # this intervention as an OAuth client to the Portal.  Do so now:
     next_url = request.args.get('next') or request.referrer or request.url
     return remote.authorize(
         callback=url_for('authorized', next=next_url, _external=True)
@@ -41,7 +44,6 @@ def authorized():
             request.args['error_reason'],
             request.args['error_description']
         )
-    print resp
     session['remote_oauth'] = (resp['access_token'], '')
     #return jsonify(oauth_token=resp['access_token'])
     return redirect('/')
