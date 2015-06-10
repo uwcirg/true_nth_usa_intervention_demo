@@ -55,7 +55,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
 /*** TODO - Temporary nav location, will need to be updated **/
-PORTAL_NAV_PAGE = "http://survivorship-prod-www-1.cirg.washington.edu:5000/api/portal-wrapper-html";
+PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html";
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS

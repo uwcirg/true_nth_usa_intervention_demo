@@ -25,8 +25,8 @@ def index():
         resp = remote.get('me')
         resp2 = remote.get('assessments')
         #return jsonify(resp.data)
-	return render_template('client_home.html', data=resp.data,
-	    assessments=resp2.data)
+	return render_template('client_home.html', PORTAL=app.config['PORTAL'],
+            data=resp.data, assessments=resp2.data)
 
     # Without 'remote_oauth' in session, we haven't yet authorized
     # this intervention as an OAuth client to the Portal.  Do so now:
