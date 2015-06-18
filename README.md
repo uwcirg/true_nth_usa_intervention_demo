@@ -10,7 +10,7 @@ $ sudo apt-get install python-virtualenv
 ```
 
 From the parent directory where you wish to install the demo, pull
-down the code and create a virtual enviornment to issolate the 
+down the code and create a virtual environment to isolate the 
 requirements from the system python
 
 ```bash
