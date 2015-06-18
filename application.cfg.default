@@ -1,9 +1,12 @@
-# Configuration values for application.  Don't commit!
+# Configuration values for application.  Don't commit secrets!
 DEBUG = True
-SECRET_KEY = 'some random secret string'
+SECRET_KEY = 'generate some random secret string'
+
 CLIENT_ID = '<value from portal /client>'
 CLIENT_SECRET = '<value from portal /client>'
-BASE_URL = 'http://<portal url>/api/'
-ACCESS_TOKEN_URL = 'http://<portal url>/oauth/token'
-AUTHORIZE_URL = 'http://<portal url>/oauth/authorize'
+
+PORTAL = 'https://truenth-demo.cirg.washington.edu'
+BASE_URL = 'https://<portal url>/api/'
+ACCESS_TOKEN_URL = 'https://<portal url>/oauth/token'
+AUTHORIZE_URL = 'https://<portal url>/oauth/authorize'
 
