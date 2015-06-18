@@ -11,7 +11,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="http://truenth-demo.cirg.washington.edu:5000/static/css/topnav.css">
+  <link rel="stylesheet" href="{{ PORTAL }}/static/css/topnav.css">
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/true-nth-base.css') }}">
   <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
@@ -43,7 +43,7 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-<script src="http://truenth-demo.cirg.washington.edu:5000/static/js/topnav.js"></script>
+<script src="{{ PORTAL }}/static/js/topnav.js"></script>
 <script>
 PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html";
 {% if username %}
