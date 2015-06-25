@@ -47,6 +47,15 @@ def authorized():
     session['remote_oauth'] = (resp['access_token'], '')
     return redirect('/')
 
+
+@app.route('/remote-oauth-token')
+def remote_oauth_token():
+    "Simple access for JS use of current Bearer token in session cookie"
+    if 'remote_oauth' not in session:
+	return jsonify(error='not authenticated')
+    return jsonify(Bearer=session['remote_oauth'])
+
+
 @remote.tokengetter
 def get_oauth_token():
     return session.get('remote_oauth')
