@@ -1,0 +1,58 @@
+
+<link rel="stylesheet" type="text/css" href="https://truenth-demo.cirg.washington.edu/static/css/topnav.css"/>
+<div id="portalNav"></div>
+
+<script>
+OPAUTH_ACCESS_TOKEN = '<?= CakeSession::read('OPAUTH_ACCESS_TOKEN') ?>';
+PORTAL_NAV_PAGE = "https://truenth-demo.cirg.washington.edu/api/protected-portal-wrapper-html";
+PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
+// Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
+function xhr_function() {
+    // Get new xhr object using default factory
+    var xhr = jQuery.ajaxSettings.xhr();
+    // Copy the browser's native setRequestHeader method
+    var setRequestHeader = xhr.setRequestHeader;
+    // Replace with a wrapper
+    xhr.setRequestHeader = function (name, value) {
+        // Ignore the X-Requested-With header
+        if (name == 'X-Requested-With') return;
+        // Otherwise call the native setRequestHeader method
+        // Note: setRequestHeader requires its 'this' to be the xhr object,
+        // which is what 'this' is here when executed.
+        setRequestHeader.call(this, name, value);
+    }
+    // pass it on to jQuery
+    return xhr;
+}
+
+// AJAX callback
+function embed_page(data) {
+    $("#portalNav")
+        // Embed data returned by AJAX call into container element
+        .html(data)
+    // Todo: add "data-*" HTML attribute
+}
+
+$(document).ready(function () {
+    var initial_xhr = $.ajax({
+        url: PORTAL_NAV_PAGE,
+        type: 'GET',
+        contentType: 'text/plain',
+        //dataFilter:data_filter,
+        //xhr: xhr_function,
+        crossDomain: true,
+        xhrFields: {withCredentials: true},
+        beforeSend: function(xhr, settings) { xhr.setRequestHeader('Authorization','Bearer ' + OPAUTH_ACCESS_TOKEN); }
+    }, 'html')
+        .done(function (data) {
+            embed_page(data);
+        })
+        .fail(function (jqXHR, textStatus, errorThrown) {
+            console.log("Error loading nav elements from " + PORTAL_HOSTNAME);
+            alert("Error loading nav elements from " + PORTAL_HOSTNAME);
+        })
+        .always(function () {
+            // alert( "complete" );
+        });
+});
+</script>
