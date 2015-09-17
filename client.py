@@ -47,6 +47,7 @@ def authorized():
             request.args['error_description']
         )
     session['remote_oauth'] = (resp['access_token'], '')
+    app.logger.info("got access_token %s", resp['access_token'])
     return redirect('/')
 
 
