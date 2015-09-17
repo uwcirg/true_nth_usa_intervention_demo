@@ -33,23 +33,19 @@
 			symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
 			(e.g., for sexual rehabilitation, exercise intervention, or social support) <em>text adapted from proposal language</em></p>
 
-            <p>You've indicated that you have a TNM staging of <strong>{{clinical["TNM-Condition-stage"]["summary"]}}</strong> 
-			and a Gleason score of <strong>{{clinical["Gleason-score"]}}</strong>.</p>
 
             <p><em>This information was retrieved from the portal's patient profile.</em></p>
+            <p> Demographics: </p>
+            {{ demographics }}
 		</div>
 	</div>
 </div>	
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-<script src="{{ PORTAL }}/static/js/topnav.js"></script>
 <script>
-PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html";
-{% if username %}
-    PORTAL_NAV_PAGE = PORTAL_NAV_PAGE + '/{{ username }}';
-{% endif %}
-
+TOKEN = "{{ TOKEN }}"
+PORTAL_NAV_PAGE = "{{ PORTAL }}/api/protected-portal-wrapper-html";
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
@@ -88,7 +84,8 @@ $(document).ready(function() {
         //dataFilter:data_filter,
         //xhr: xhr_function,
         crossDomain: true,
-        //xhrFields: {withCredentials: true},
+        xhrFields: {withCredentials: true},
+        beforeSend: function(xhr, settings) { xhr.setRequestHeader('Authorization','Bearer ' + TOKEN); }
     }, 'html')
     .done(function(data) {
         embed_page(data);

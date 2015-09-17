@@ -21,12 +21,14 @@ remote = oauth.remote_app(
 @app.route('/')
 def index():
     if 'remote_oauth' in session:
-        user = remote.get('me')
-        clinical = remote.get('clinical')
-        if clinical.status == 200: 
+        # Waiting on clinical parsing and display
+        # clinical = remote.get('clinical')
+        demographics = remote.get('demographics')
+        if demographics.status == 200: 
             return render_template('client_home.html',
-                PORTAL=app.config['PORTAL'], clinical=clinical.data,
-                username=user.data['username'])
+                PORTAL=app.config['PORTAL'],
+                demographics=demographics.data,
+                TOKEN=session['remote_oauth'])
 
     # Still here means we need to (re)authorize this intervention as an
     # OAuth client to the Portal.
@@ -45,6 +47,7 @@ def authorized():
             request.args['error_description']
         )
     session['remote_oauth'] = (resp['access_token'], '')
+    app.logger.info("got access_token %s", resp['access_token'])
     return redirect('/')
 
 
@@ -52,7 +55,7 @@ def authorized():
 def remote_oauth_token():
     "Simple access for JS use of current Bearer token in session cookie"
     if 'remote_oauth' not in session:
-	return jsonify(error='not authenticated')
+        return jsonify(error='not authenticated')
     return jsonify(Bearer=session['remote_oauth'])
 
 
