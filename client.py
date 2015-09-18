@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import hmac
+import json
 from flask import Flask, url_for, session, request, jsonify
 from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
@@ -62,6 +66,41 @@ def remote_oauth_token():
 @remote.tokengetter
 def get_oauth_token():
     return session.get('remote_oauth')
+
+
+@app.route('/callback', methods=('POST',))
+def CS_callback():
+    """Register this endpoint with Central Services for event callbacks
+
+    Central Services will POST a signed_request on significant events
+    such as user logout.
+
+    Verify the signature and log the event.
+
+    """
+    def base64_url_decode(s):
+        """url safe base64 decoding method"""
+        padding_factor = (4 - len(s) % 4)
+        s += "="*padding_factor
+        return base64.b64decode(unicode(s).translate(
+            dict(zip(map(ord, u'-_'), u'+/'))))
+
+    encoded_sig, payload = request.form['signed_request'].split('.')
+    sig = base64_url_decode(encoded_sig)
+    data = base64_url_decode(payload)
+
+    secret = app.config['CLIENT_SECRET']
+    expected_sig = hmac.new(secret, msg=payload,
+            digestmod=hashlib.sha256).digest()
+    if expected_sig != sig:
+        app.logger.error("Invalid signature from Central Services!")
+        return jsonify(error='bad signature')
+
+    data = json.loads(data)
+    app.logger.debug('event: %s for user %d', data['event'],
+        data['user_id'])
+
+    return jsonify(message='ok')
 
 
 if __name__ == '__main__':
