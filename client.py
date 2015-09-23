@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+import urllib
 from flask import Flask, url_for, session, request, jsonify
 from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
@@ -11,7 +12,7 @@ app.config.from_pyfile('application.cfg', silent=False)
 oauth = OAuth(app)
 
 remote = oauth.remote_app(
-    'remote',
+    'TrueNTH Central Services',
     consumer_key=app.config['CLIENT_ID'],
     consumer_secret=app.config['CLIENT_SECRET'],
     request_token_params={'scope': 'email'},
@@ -21,35 +22,74 @@ remote = oauth.remote_app(
     authorize_url=app.config['AUTHORIZE_URL'],
 )
 
+def validate_remote_token():
+    """Make a protected call to the remote API to validate token
 
-@app.route('/')
-def index():
-    if 'remote_oauth' in session:
-        # Waiting on clinical parsing and display
-        # clinical = remote.get('clinical')
-        demographics = remote.get('demographics')
-        if demographics.status == 200: 
-            return render_template('client_home.html',
-                PORTAL=app.config['PORTAL'],
-                demographics=demographics.data,
-                TOKEN=session['remote_oauth'])
+    Return True if valid, False otherwise
+    """
+    if 'remote_oauth' not in session:
+        return False
+
+    me = remote.get('me')
+    if me.status == 200:
+        return True
+    else:
+        app.logger.debug(">>> remote call failed with status: %d", me.status)
+    return False
+
+
+@app.route('/login')
+def login():
+    """Entry point for intiating OAuth 2 authentication dance
+
+    Goal is to obtain a valide OAuth 2 access token from Central
+    Services.  It will be stored in the local session (cookie based)
+    as 'remote_oauth'.
+
+    Details of obtaining the token are hidden in `flask_oauthlib.client`
+    initiated here with a call to remote.authorize()
+
+    """
+    if validate_remote_token():
+        return redirect('.index')
 
     # Still here means we need to (re)authorize this intervention as an
-    # OAuth client to the Portal.
+    # OAuth client against Central Services.
     next_url = request.args.get('next') or request.referrer or request.url
+    app.logger.debug(">>> remote call to authorize with next=%s", next_url)
     return remote.authorize(
         callback=url_for('authorized', next=next_url, _external=True)
     )
+
+
+@app.route('/')
+def index():
+    authorized = validate_remote_token()
+
+    if authorized:
+        login_url = None
+        token = session['remote_oauth']
+        demographics = remote.get('demographics').data
+    else:
+        login_url = urllib.quote("http://{0}{1}".\
+                format(app.config['SERVER_NAME'], url_for('login')))
+        token = demographics = None
+
+    return render_template('client_home.html', authorized=authorized,
+            PORTAL=app.config['PORTAL'], demographics=demographics,
+            TOKEN=token, login_url=login_url)
 
 
 @app.route('/authorized')
 def authorized():
     resp = remote.authorized_response()
     if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
+        message = 'Access denied: reason=%s error=%s' % (
             request.args['error_reason'],
             request.args['error_description']
         )
+        app.logger.error(message)
+        return message
     session['remote_oauth'] = (resp['access_token'], '')
     app.logger.info("got access_token %s", resp['access_token'])
     return redirect('/')
