@@ -1,4 +1,5 @@
 import base64
+from datetime import datetime, timedelta
 import hashlib
 import hmac
 import json
@@ -30,11 +31,14 @@ def validate_remote_token():
     if 'remote_oauth' not in session:
         return False
 
-    me = remote.get('me')
-    if me.status == 200:
+    token_status = remote.get('../oauth/token-status')
+
+    if token_status.status == 200:
+        app.logger.debug("token status: %s", str(token_status.data))
         return True
     else:
-        app.logger.debug(">>> remote call failed with status: %d", me.status)
+        app.logger.debug(">>> remote call failed with status: %d",
+                token_status.status)
     return False
 
 
@@ -92,6 +96,9 @@ def authorized():
         return message
     session['remote_oauth'] = (resp['access_token'], '')
     app.logger.info("got access_token %s", resp['access_token'])
+    session['remote_oauth_expires_at'] = datetime.utcnow() +\
+            timedelta(0, resp['expires_in'])
+    app.logger.info("expires_in %s", resp['expires_in'])
     return redirect('/')
 
 
@@ -137,8 +144,8 @@ def CS_callback():
         return jsonify(error='bad signature')
 
     data = json.loads(data)
-    app.logger.debug('event: %s for user %d', data['event'],
-        data['user_id'])
+    app.logger.debug('event: %s for user %d, refresh_token %s', data['event'],
+        data['user_id'], data['refresh_token'])
 
     return jsonify(message='ok')
 
