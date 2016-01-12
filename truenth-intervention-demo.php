@@ -18,7 +18,7 @@ PHP for web user authentication:
      * Will give them a long-living token (secret key). They'll include that bearer token in the exact same manner as the web user, 
      * in the access header - needs to go via https so it can't be sniffed out (we don't support http anyways). 
      * We can make the tokens good for 2 days or 2 years, or… TBD
-     * /
+     */
 
     foreach ($patientSpreadsheet as $patient){
 
