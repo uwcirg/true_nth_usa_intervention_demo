@@ -2,12 +2,16 @@
 
 /**
 Pseudo code to illustrate server-side use of TrueNTH central services.
-serverGet is an abstraction here; requires prep including obtaining a servie-level OAuth token.
-PHP examples of that are here (though they're not very readable):
+serverGet is an abstraction here; requires prep including obtaining a service-level OAuth token.
+
+Related examples:
+PHP for web user authentication:
     https://github.com/uwcirg/opauth-truenth
     https://github.com/uwcirg/cakephp-opauth
 */
     define('CENTRAL_SERVICES_URL', 'https://truenth-demo.cirg.washington.edu/api/');
+
+    //TODO add example of obtaining a service-level OAuth token.
 
     foreach ($patientSpreadsheet as $patient){
 
