@@ -1,22 +1,22 @@
 <!--
-Example of client-side code for retrieving the TrueNTH portal "wrapper". 
+Example of client-side code for retrieving the TrueNTH portal "wrapper".
 Note that this example uses PHP tags to retrieve a previously-set "OPAUTH_ACCESS_TOKEN"; examples of that are here:
 https://github.com/uwcirg/opauth-truenth
 https://github.com/uwcirg/cakephp-opauth
 
 In addition to setting OAUTH, this example currently relies on the intervention already including:
 - A version of jQuery that supports $.ajax
-- Bootstrap 3.x
-- <div id="portalNav"></div> to be placed directly after the <body> tag (currently not using CSS to foce it to top of page)
+- <div id="portalNav"></div> to be placed directly after the <body> tag
 
-This demo will be expanded to allow for more flexibility
+In this PHP example, CENTRAL_SERVICES_URL needs to be declared
+
 -->
-<link rel="stylesheet" type="text/css" href="https://truenth-demo.cirg.washington.edu/static/css/topnav.css"/>
+<link rel="stylesheet" type="text/css" href="<?= CENTRAL_SERVICES_URL ?>static/css/topnav.css"/>
 <div id="portalNav"></div>
 
 <script>
 OPAUTH_ACCESS_TOKEN = '<?= CakeSession::read('OPAUTH_ACCESS_TOKEN') ?>';
-PORTAL_NAV_PAGE = "https://truenth-demo.cirg.washington.edu/api/protected-portal-wrapper-html";
+PORTAL_NAV_PAGE = "<?= CENTRAL_SERVICES_URL ?>api/protected-portal-wrapper-html";
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
 function xhr_function() {
