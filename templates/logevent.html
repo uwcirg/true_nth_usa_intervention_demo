@@ -24,20 +24,16 @@
 <div class="container content-container">
 	<div class="row">
 		<div class="col-xs-12">
-		  <h2>Patient and Caregiver Self-Management (demo)</h2>
+		  <h2>Log Event</h2>
 
-			<p>This True Nth site provides feedback reports to patients and their caregivers summarizing their Quality of Life ("QOL") progress, 
-			and putting this progress in the context of hundreds or thousands of men with similar demographic, clinical, and treatment profiles, 
-			thereby allowing them to determine whether their recovery is on the expected trajectory or not. 
-			The site will provide coaching related to known established self-management strategies that may benefit patients with bothersome 
-			symptom dysfunctions. Where appropriate, patients and caregivers will be directed to other True NTH tools 
-			(e.g., for sexual rehabilitation, exercise intervention, or social support) <em>text adapted from proposal language</em></p>
-
-            {% if authorized %}
-            <p><em>This information was retrieved from the portal's patient profile.</em></p>
-            <p> Demographics: </p>
-            {{ demographics }}
-            {% endif %}
+          <p>Enter text to transmit to central services to be logged as an auditable event.</p>
+          <form action="logevent" method='POST'>
+              <div class="form-group">
+                  <label>Message</label>
+                  <input type="text" class="form-control" id="message" name="message" placeholder="Text..."/>
+                  <button id="logmessage" type="submit" class="btn btn-lg btn-default">Post</button>
+              </div>
+          </form>
 		</div>
 	</div>
 </div>	
@@ -46,9 +42,10 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
 TOKEN = "{{ TOKEN }}"
-PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html/";
-{% if login_url %}
-    PORTAL_NAV_PAGE = PORTAL_NAV_PAGE + "?login_url={{ login_url }}";
+{% if authorized %}
+PORTAL_NAV_PAGE = "{{ PORTAL }}/api/protected-portal-wrapper-html";
+{% else %}
+PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html/?login_url={{ login_url }}";
 {% endif %}
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 
@@ -88,11 +85,12 @@ $(document).ready(function() {
         //dataFilter:data_filter,
         //xhr: xhr_function,
         crossDomain: true,
-        xhrFields: {withCredentials: true},
+        {% if authorized %} xhrFields: {withCredentials: true}, {% endif %}
         beforeSend: function(xhr, settings) { xhr.setRequestHeader('Authorization','Bearer ' + TOKEN); }
     }, 'html')
     .done(function(data) {
         embed_page(data);
+        showSearch();
     })
     .fail(function(jqXHR, textStatus, errorThrown) {
         alert("Error loading nav elements from " + PORTAL_HOSTNAME);

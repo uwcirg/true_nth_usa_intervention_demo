@@ -8,6 +8,7 @@ from flask import Flask, url_for, session, request, jsonify
 from flask import redirect, render_template
 from flask_oauthlib.client import OAuth
 
+
 app = Flask(__name__, template_folder='templates')
 app.config.from_pyfile('application.cfg', silent=False)
 oauth = OAuth(app)
@@ -23,6 +24,21 @@ remote = oauth.remote_app(
     authorize_url=app.config['AUTHORIZE_URL'],
 )
 
+@app.route('/enrollment/complete')
+def complete():
+    return jsonify(message='successful next route to /enrollment/complete',
+                   code=request.args.get('code'))
+
+@app.route('/code', methods=['GET', 'POST'])
+def code():
+    if request.method == 'POST':
+        next_url = 'http://truenth-intervention-demo.cirg.washington.edu:8000/enrollment/complete?code={}'.format(request.form['code'])
+        target = 'http://truenth-demo.cirg.washington.edu:5000/user/register?next={}'.format(urllib.quote(next_url))
+        app.logger.debug("redirecting to {}".format(target))
+        return redirect(target)
+    else:
+        return render_template('code.html')
+
 def validate_remote_token():
     """Make a protected call to the remote API to validate token
 
@@ -37,7 +53,7 @@ def validate_remote_token():
         app.logger.debug("token status: %s", str(token_status.data))
         return True
     else:
-        app.logger.debug(">>> remote call failed with status: %d",
+        app.logger.debug("validate_remote_token >>> remote call failed with status: %d",
                 token_status.status)
     return False
 
@@ -55,14 +71,15 @@ def login():
 
     """
     if validate_remote_token():
-        return redirect('.index')
+        return redirect('/')
 
     # Still here means we need to (re)authorize this intervention as an
     # OAuth client against Central Services.
     next_url = request.args.get('next') or request.referrer or request.url
     app.logger.debug(">>> remote call to authorize with next=%s", next_url)
     return remote.authorize(
-        callback=url_for('authorized', next=next_url, _external=True)
+        callback=url_for('authorized' , _external=True),
+        next=next_url
     )
 
 
@@ -83,6 +100,15 @@ def index():
             PORTAL=app.config['PORTAL'], demographics=demographics,
             TOKEN=token, login_url=login_url)
 
+@app.route('/logevent', methods=('GET', 'POST'))
+def logevent():
+    if request.method == 'POST':
+        message = request.form.get('message')
+        resp = remote.post('auditlog', data={'message': message})
+        return jsonify(result=resp.data)
+    return render_template('logevent.html', PORTAL=app.config['PORTAL'],
+            TOKEN=session['remote_oauth'])
+
 
 @app.route('/authorized')
 def authorized():
@@ -99,6 +125,12 @@ def authorized():
     session['remote_oauth_expires_at'] = datetime.utcnow() +\
             timedelta(0, resp['expires_in'])
     app.logger.info("expires_in %s", resp['expires_in'])
+
+    # Redirect to the next parameter, if provided
+    if request.args.get('next'):
+        app.logger.info("done with auth, redirect to 'next': %s",
+                        request.args.get('next'))
+        return redirect(request.args.get('next'))
     return redirect('/')
 
 
@@ -155,4 +187,4 @@ if __name__ == '__main__':
     os.environ['DEBUG'] = 'true'
     os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = 'true'
     print "Starting with client_id", app.config['CLIENT_ID']
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000, threaded=True)
