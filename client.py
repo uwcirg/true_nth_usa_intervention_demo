@@ -31,6 +31,11 @@ def complete():
 
 @app.route('/code', methods=['GET', 'POST'])
 def code():
+    """Simulate SRs login code approach
+
+    Gather an arbitrary code value from a simple form, and initiate the
+    redirection loop - expecting control to finally return to next_url
+    """
     if request.method == 'POST':
         next_url = 'http://truenth-intervention-demo.cirg.washington.edu:8000/enrollment/complete?code={}'.format(request.form['code'])
         target = 'http://truenth-demo.cirg.washington.edu:5000/user/register?next={}'.format(urllib.quote(next_url))
@@ -38,6 +43,17 @@ def code():
         return redirect(target)
     else:
         return render_template('code.html')
+
+def user_id():
+    """grab user_id from demographics and save in session"""
+    if 'user_id' in session:
+        return session['user_id']
+    data = remote.get('demographics').data
+    ids = [i['value'] for i in data['identifier'] if i['system'] ==
+           'http://us.truenth.org/identity-codes/TrueNTH-identity']
+    assert(len(ids) == 1)
+    session['user_id'] = ids[0]
+    return session['user_id']
 
 def validate_remote_token():
     """Make a protected call to the remote API to validate token
@@ -99,6 +115,67 @@ def index():
     return render_template('client_home.html', authorized=authorized,
             PORTAL=app.config['PORTAL'], demographics=demographics,
             TOKEN=token, login_url=login_url)
+
+
+@app.route('/coredata', methods=('GET', 'POST'))
+def coredata():
+    """Demonstrate use of coredata round trip"""
+    authorized = validate_remote_token()
+    if not authorized:
+        app.logger.debug("Not authorized in coredata, redirect")
+        return redirect('/')
+
+    def race_eth_from_demographics(demographics):
+        # return race & ethnicities or None from demographics data
+        if 'extension' not in demographics:
+            return None, None
+
+        race = eth = None
+        for ext in demographics['extension']:
+            if ext['url'] ==\
+               'http://hl7.org/fhir/StructureDefinition/us-core-race':
+                race = [coding['display'] for coding in
+                        ext['valueCodeableConcept']['coding']]
+            if ext['url'] ==\
+               'http://hl7.org/fhir/StructureDefinition/us-core-ethnicity':
+                eth = [coding['display'] for coding in
+                        ext['valueCodeableConcept']['coding']]
+        return race, eth
+
+    def fetch_procs():
+        # return list of procedures in readable format
+        data = remote.get('patient/{}/procedure'.format(user_id())).data
+        procedures = []
+        for entry in data['entry']:
+            procedures.append("{} at {}".format(
+                entry['content']['code']['coding'][0]['display'],
+                entry['content']['performedDateTime']))
+        return procedures
+
+    demo = remote.get('demographics').data
+    race, eth = race_eth_from_demographics(demo)
+    procedures = fetch_procs()
+    if race and eth and procedures:
+        return render_template(
+            'coredata.html', PORTAL=app.config['PORTAL'],
+            TOKEN=session['remote_oauth'], race=';'.join(race),
+            ethnicity=';'.join(eth),
+            procedures=';'.join(procedures))
+    else:
+        # Redirect to Shared Services to acquire race data, asking to
+        # be returned to here.
+        return_url = url_for('coredata', _external=True)
+        query = [('next', return_url)]
+        # Require only what we don't already have
+        if not race:
+            query.append(('require', 'race'))
+        if not eth:
+            query.append(('require', 'ethnicity'))
+        if not procedures:
+            query.append(('require', 'procedure'))
+        target = '{}coredata/acquire?{}'.format(remote.base_url,
+                                        urllib.urlencode(query))
+        return redirect(target)
 
 @app.route('/logevent', methods=('GET', 'POST'))
 def logevent():
