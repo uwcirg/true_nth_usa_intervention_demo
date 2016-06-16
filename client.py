@@ -164,7 +164,8 @@ def coredata():
     else:
         # Redirect to Shared Services to acquire race data, asking to
         # be returned to here.
-        return_url = url_for('coredata', _external=True)
+        return_url = url_for('coredata', q_arg1='first_arg',
+                             q_arg2='second_arg', _external=True)
         query = [('next', return_url)]
         # Require only what we don't already have
         if not race:
