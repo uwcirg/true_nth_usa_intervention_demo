@@ -117,7 +117,7 @@ def index():
             TOKEN=token, login_url=login_url)
 
 
-@app.route('/coredata', methods=('GET', 'POST'))
+@app.route('/coredata')
 def coredata():
     """Demonstrate use of coredata round trip"""
     authorized = validate_remote_token()
@@ -160,12 +160,14 @@ def coredata():
             'coredata.html', PORTAL=app.config['PORTAL'],
             TOKEN=session['remote_oauth'], race=';'.join(race),
             ethnicity=';'.join(eth),
-            procedures=';'.join(procedures))
+            procedures=';'.join(procedures),
+            args=request.args)
     else:
         # Redirect to Shared Services to acquire race data, asking to
         # be returned to here.
         return_url = url_for('coredata', q_arg1='first_arg',
                              q_arg2='second_arg', _external=True)
+        return_url += '&q_arg3=["race","ethnicity"]'
         query = [('next', return_url)]
         # Require only what we don't already have
         if not race:

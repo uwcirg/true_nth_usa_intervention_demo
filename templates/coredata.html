@@ -31,6 +31,12 @@
               <li>Remote value for ethnicity {{ ethnicity }}</li>
               <li>Remote value for procedures {{ procedures }}</li>
           </ul>
+
+          <ul>
+              {% for k,v in args.items() %}
+              <li> {{ k }} : {{ v}} </li>
+              {% endfor %}
+          </ul>
 	</div>
 </div>
 
