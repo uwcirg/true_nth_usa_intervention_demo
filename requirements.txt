@@ -3,7 +3,7 @@ Flask-OAuthlib==0.9.1
 Jinja2==2.7.3
 MarkupSafe==0.23
 Werkzeug==0.9.4
-argparse==1.2.1
+argparse==1.4.0
 distribute==0.7.3
 itsdangerous==0.24
 oauthlib==0.7.2
