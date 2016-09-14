@@ -58,20 +58,24 @@ def user_id():
 def validate_remote_token():
     """Make a protected call to the remote API to validate token
 
-    Return True if valid, False otherwise
+    Return number of remaining seconds remote token is good for.
+    Value of zero indicates expired (i.e. not valid).
+
     """
     if 'remote_oauth' not in session:
-        return False
+        return 0
 
     token_status = remote.get('../oauth/token-status')
 
     if token_status.status == 200:
         app.logger.debug("token status: %s", str(token_status.data))
-        return True
+        expires_in = token_status.data['expires_in']
+        assert (expires_in > 0)
+        return expires_in
     else:
         app.logger.debug("validate_remote_token >>> remote call failed with status: %d",
                 token_status.status)
-    return False
+    return 0
 
 
 @app.route('/login')

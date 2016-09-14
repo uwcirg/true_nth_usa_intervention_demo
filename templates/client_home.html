@@ -34,6 +34,9 @@
 			(e.g., for sexual rehabilitation, exercise intervention, or social support) <em>text adapted from proposal language</em></p>
 
             {% if authorized %}
+            {% if config.DEBUG_TIMEOUTS %}
+                ({{ authorized }} seconds remaining)
+            {% endif %}
             <p><em>This information was retrieved from the portal's patient profile.</em></p>
             <p> Demographics: </p>
             {{ demographics }}
