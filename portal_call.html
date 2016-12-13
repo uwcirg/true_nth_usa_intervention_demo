@@ -16,7 +16,7 @@ In this PHP example, CENTRAL_SERVICES_URL needs to be declared
 
 <script>
 OPAUTH_ACCESS_TOKEN = '<?= CakeSession::read('OPAUTH_ACCESS_TOKEN') ?>';
-PORTAL_NAV_PAGE = "<?= CENTRAL_SERVICES_URL ?>api/protected-portal-wrapper-html";
+PORTAL_NAV_PAGE = "<?= CENTRAL_SERVICES_URL ?>api/portal-wrapper-html";
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
 function xhr_function() {
