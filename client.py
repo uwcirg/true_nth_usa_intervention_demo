@@ -3,6 +3,11 @@ from datetime import datetime, timedelta
 import hashlib
 import hmac
 import json
+import os
+import random
+import requests
+import string
+from tempfile import NamedTemporaryFile
 import urllib
 from flask import Flask, url_for, session, request, jsonify
 from flask import redirect, render_template
@@ -264,6 +269,77 @@ def CS_callback():
         data['user_id'], data['refresh_token'])
 
     return jsonify(message='ok')
+
+
+def service_request(url, method='GET', payload=None, files=None):
+    """Wrap server side request with the configured service token """
+
+    base_url = app.config['BASE_URL']
+    token = app.config['SERVICE_TOKEN']
+    headers = {'Authorization': "Bearer {}".format(token)}
+
+    # relative url with '../' doesn't work, fix if necessary
+    endpoint = os.path.join(base_url, url)
+    if url.startswith('../'):
+        base, junk = os.path.split(base_url[:-1])
+        endpoint = os.path.join(base, url[3:])
+
+    if method == 'GET':
+        return requests.get(endpoint, headers=headers).json()
+    if method == 'POST':
+        return requests.post(
+            endpoint, json=payload, headers=headers, files=files).json()
+    if method == 'PUT':
+        return requests.put(endpoint, json=payload, headers=headers).json()
+    else:
+        raise ValueError("unknown method {}".format(method))
+
+
+@app.route('/create_account')
+def create_account():
+    """Hook for testing service account creation"""
+    # validate service token
+    token_status = service_request('../oauth/token-status')
+    assert token_status.get('expires_in') > 0
+
+    # create a new account associated with org #11000
+    org = {'organizations':[{'organization_id': 11000}]}
+    user_id = service_request('account', payload=org, method='POST').get(
+        'user_id')
+
+    roles = {'roles': [{'name': 'patient'},
+                       {'name': 'promote_without_identity_challenge'},
+                       {'name': 'write_only'}]}
+    results = service_request(
+        'user/{}/roles'.format(user_id), payload=roles, method='PUT')
+
+    # add demographics to new account
+    email = 'pbugni+{}@gmail.com'.format(
+        ''.join(random.choice(string.ascii_uppercase +
+                              string.digits) for _ in range(3)))
+    demographics = {"resourceType": "Patient",
+                    "name": {"family": "Tester", "given": "Lonely"},
+                    "birthDate": "1999-01-01",
+                    "telecom": [
+                        {"system": "email", "value": email}
+                    ],
+                   }
+    results = service_request(
+        'demographics/{}'.format(user_id), payload=demographics, method='PUT')
+
+
+    #results = service_request(
+    #    'user/{}/patient_report'.format(user_id), method='POST',
+    #    files={'/tmp/mission.peak.pdf':
+    #           open('/tmp/mission.peak.pdf', 'rb').read()})
+
+    # Transition the user to a TrueNTH page explaining value prop
+    # asking them to set a p/w - in other words, invite them to create
+    # an account, then merge in all the data from the write_only account
+    # used above
+
+    results = service_request('user/{}/access_url'.format(user_id))
+    return redirect(results.get('access_url'))
 
 
 if __name__ == '__main__':
