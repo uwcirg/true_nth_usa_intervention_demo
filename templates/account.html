@@ -1,0 +1,36 @@
+<html>
+<head/>
+    <body>
+        <h1> Welcome </h1>
+        <form action='account' method='POST'>
+            <p>Please enter information for new account</p>
+            <table>
+                <tr>
+                    <td>email</td>
+                    <td><input type='text' name='email'/></td>
+                </tr>
+                <tr>
+                    <td>DOB (YYYY-MM-DD)</td>
+                    <td><input type='text' name='dob'/></td>
+                </tr>
+                <tr>
+                    <td>organization id</td>
+                    <td><input type='text' name='organization_id'/></td>
+                </tr>
+            </table>
+
+            <p>After account creation, use access URL or send to /oauth/authorize?</p>
+            <table>
+                <tr>
+                    <td>Redirect to access URL</td>
+                    <td><input type="checkbox" name="access_url"/></td>
+                </tr>
+            <tr>
+                <td>suspend initial queries</td>
+                <td><input type='checkbox' name='suspend_initial_queries'/></td>
+            </tr>
+            </table>
+            <input type='submit'/>
+        </form>
+    </body>
+</html>
