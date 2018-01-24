@@ -47,22 +47,20 @@
 <p>
 Additional entry points for testing
 </p>
+{% if not authorized %}
 <ul>
-    <li><a href='/create_account'>Create Account on Portal</a></li>
+    <li><a href='/account'>Create Account on Portal</a></li>
+    <li><a href='/auth_suspend_queries'>Trigger OAuth against Portal including <i>suspend_initial_queries</i></a></li>
+    <li><a href='/login'>Trigger OAuth against Portal without <i>suspend_initial_queries</i></a></li>
 </ul>
+{%  endif %}
+
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 <script>
 TOKEN = "{{ TOKEN }}"
-PORTAL_NAV_PAGE = "{{ PORTAL }}/api/portal-wrapper-html/";
-wc_args = "brand=wisercare&disable_links=1"
-{% if login_url %}
-    PORTAL_NAV_PAGE = PORTAL_NAV_PAGE + "?login_url={{ login_url }}&" + wc_args;
-{% else %}
-    PORTAL_NAV_PAGE = PORTAL_NAV_PAGE + "?" + wc_args;
-{% endif %}
-
+PORTAL_NAV_PAGE = "{{ PORTAL_NAV_PAGE }}"
 PORTAL_HOSTNAME = new URL(PORTAL_NAV_PAGE).hostname;
 
 // Return an XHR without XHR header so  it doesn't need to be explicitly allowed with CORS
