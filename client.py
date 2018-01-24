@@ -3,11 +3,7 @@ from datetime import datetime, timedelta
 import hashlib
 import hmac
 import json
-import os
-import random
 import requests
-import string
-from tempfile import NamedTemporaryFile
 import urllib
 from flask import Flask, url_for, session, request, jsonify
 from flask import redirect, render_template
@@ -87,7 +83,7 @@ def validate_remote_token():
 def login():
     """Entry point for intiating OAuth 2 authentication dance
 
-    Goal is to obtain a valide OAuth 2 access token from Central
+    Goal is to obtain a valid OAuth 2 access token from Central
     Services.  It will be stored in the local session (cookie based)
     as 'remote_oauth'.
 
@@ -110,20 +106,32 @@ def login():
 
 @app.route('/')
 def index():
-    authorized = validate_remote_token()
+    include_wisercare_args = False  # set true to see wc experience
 
+    query_args = dict()
+    PORTAL_NAV_PAGE = "{PORTAL}/api/portal-wrapper-html/".format(
+        PORTAL=app.config['PORTAL'])
+
+    authorized = validate_remote_token()
     if authorized:
-        login_url = None
         token = session['remote_oauth']
         demographics = remote.get('demographics').data
     else:
-        login_url = urllib.quote("http://{0}{1}".\
+        token, demographics = None, None
+        query_args['login_url'] = urllib.quote("http://{0}{1}".\
                 format(app.config['SERVER_NAME'], url_for('login')))
-        token = demographics = None
+        if include_wisercare_args:
+            query_args['brand'] = 'wisercare'
+            query_args['disable_links'] = '1'
+        PORTAL_NAV_PAGE = '?'.join(
+            (PORTAL_NAV_PAGE, urllib.urlencode(query_args)))
 
-    return render_template('client_home.html', authorized=authorized,
-            PORTAL=app.config['PORTAL'], demographics=demographics,
-            TOKEN=token, login_url=login_url)
+    return render_template(
+        'client_home.html', authorized=authorized,
+        PORTAL=app.config['PORTAL'],
+        PORTAL_NAV_PAGE=PORTAL_NAV_PAGE,
+        demographics=demographics,
+        TOKEN=token)
 
 
 @app.route('/coredata')
@@ -295,15 +303,36 @@ def service_request(url, method='GET', payload=None, files=None):
         raise ValueError("unknown method {}".format(method))
 
 
-@app.route('/create_account')
-def create_account():
-    """Hook for testing service account creation"""
+@app.route('/account', methods=['GET', 'POST'])
+def account():
+    """Simulate new account flow.
+
+    Gather bits from simple form, use service token to generate
+    account and set values before logging new user in.
+
+    """
+    if request.method == 'POST':
+        kwargs = dict()
+        for arg in ('email', 'dob', 'organization_id'):
+            kwargs[arg] = request.form.get(arg)
+        app.logger.debug("creating new account")
+        return create_account(**kwargs)
+    else:
+        return render_template('account.html')
+
+
+def create_account(**kwargs):
+    """Create remote account using service token"""
+
     # validate service token
     token_status = service_request('../oauth/token-status')
     assert token_status.get('expires_in') > 0
 
-    # create a new account associated with org #11000
-    org = {'organizations':[{'organization_id': 11000}]}
+    # create a new account with given args
+    org = None
+    if kwargs.get('organization_id'):
+        org = {'organizations':[
+            {'organization_id': kwargs.get('organization_id')}]}
     user_id = service_request('account', payload=org, method='POST').get(
         'user_id')
 
@@ -314,24 +343,16 @@ def create_account():
         'user/{}/roles'.format(user_id), payload=roles, method='PUT')
 
     # add demographics to new account
-    email = 'pbugni+{}@gmail.com'.format(
-        ''.join(random.choice(string.ascii_uppercase +
-                              string.digits) for _ in range(3)))
+    email = kwargs['email']
     demographics = {"resourceType": "Patient",
                     "name": {"family": "Tester", "given": "Lonely"},
-                    "birthDate": "1999-01-01",
+                    "birthDate": kwargs['dob'],
                     "telecom": [
                         {"system": "email", "value": email}
                     ],
                    }
     results = service_request(
         'demographics/{}'.format(user_id), payload=demographics, method='PUT')
-
-
-    #results = service_request(
-    #    'user/{}/patient_report'.format(user_id), method='POST',
-    #    files={'/tmp/mission.peak.pdf':
-    #           open('/tmp/mission.peak.pdf', 'rb').read()})
 
     # Transition the user to a TrueNTH page explaining value prop
     # asking them to set a p/w - in other words, invite them to create
@@ -340,6 +361,23 @@ def create_account():
 
     results = service_request('user/{}/access_url'.format(user_id))
     return redirect(results.get('access_url'))
+
+@app.route('/auth_suspend_queries')
+def auth_suspend_queries():
+    """Simulate new account registration using `suspend_initial_queries` """
+
+    # confirm we're not already in auth state
+    assert not validate_remote_token()
+
+    # authorize this intervention as an OAuth client against Central Services.
+    # user will be asked to login or register
+    # including the suspend_initial_queries flag
+    next_url = request.args.get('next') or request.referrer or request.url
+    app.logger.debug(">>> remote call to authorize with next=%s", next_url)
+    return remote.authorize(
+        callback=url_for('authorized', _external=True),
+        next=next_url,
+        suspend_initial_queries=True)
 
 
 if __name__ == '__main__':
