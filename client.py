@@ -6,7 +6,7 @@ import json
 import requests
 import urllib
 from flask import Flask, url_for, session, request, jsonify
-from flask import redirect, render_template
+from flask import abort, redirect, render_template
 from flask_oauthlib.client import OAuth
 
 
@@ -293,14 +293,22 @@ def service_request(url, method='GET', payload=None, files=None):
         endpoint = os.path.join(base, url[3:])
 
     if method == 'GET':
-        return requests.get(endpoint, headers=headers).json()
-    if method == 'POST':
-        return requests.post(
-            endpoint, json=payload, headers=headers, files=files).json()
-    if method == 'PUT':
-        return requests.put(endpoint, json=payload, headers=headers).json()
+        result = requests.get(endpoint, headers=headers)
+    elif method == 'POST':
+        result = requests.post(
+            endpoint, json=payload, headers=headers, files=files)
+    elif method == 'PUT':
+        result = requests.put(endpoint, json=payload, headers=headers)
     else:
         raise ValueError("unknown method {}".format(method))
+
+    if result.status_code == 200:
+        return result.json()
+    else:
+        app.logger.error(
+            "non 200 response on {method} {url} : {message}".format(
+                method=method, url=url, message=result.text))
+        abort(result.status_code, result.text)
 
 
 @app.route('/account', methods=['GET', 'POST'])
@@ -312,11 +320,9 @@ def account():
 
     """
     if request.method == 'POST':
-        kwargs = dict()
-        for arg in ('email', 'dob', 'organization_id'):
-            kwargs[arg] = request.form.get(arg)
-        app.logger.debug("creating new account")
-        return create_account(**kwargs)
+        app.logger.debug(
+            "calling creating_account with {}".format(request.form))
+        return create_account(**request.form.to_dict())
     else:
         return render_template('account.html')
 
@@ -336,19 +342,24 @@ def create_account(**kwargs):
     user_id = service_request('account', payload=org, method='POST').get(
         'user_id')
 
-    roles = {'roles': [{'name': 'patient'},
-                       {'name': 'promote_without_identity_challenge'},
-                       {'name': 'write_only'}]}
-    results = service_request(
-        'user/{}/roles'.format(user_id), payload=roles, method='PUT')
+    roles = [
+        {'name': r} for r in (
+            'access_on_verify', 'patient',
+            'promote_without_identity_challenge', 'write_only')
+        if kwargs.get(r)]
+    if roles:
+        results = service_request(
+            'user/{}/roles'.format(user_id),
+            payload={'roles': roles}, method='PUT')
+        assert(len(results['roles']) == len(roles))
 
     # add demographics to new account
-    email = kwargs['email']
     demographics = {"resourceType": "Patient",
-                    "name": {"family": "Tester", "given": "Lonely"},
+                    "name": {"family": kwargs.get('last_name'),
+                             "given": kwargs.get('first_name')},
                     "birthDate": kwargs['dob'],
                     "telecom": [
-                        {"system": "email", "value": email}
+                        {"system": "email", "value": kwargs.get('email')}
                     ],
                    }
     results = service_request(
@@ -358,9 +369,9 @@ def create_account(**kwargs):
     # asking them to set a p/w - in other words, invite them to create
     # an account, then merge in all the data from the write_only account
     # used above
-
     results = service_request('user/{}/access_url'.format(user_id))
     return redirect(results.get('access_url'))
+
 
 @app.route('/auth_suspend_queries')
 def auth_suspend_queries():

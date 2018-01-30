@@ -1,10 +1,18 @@
 <html>
 <head/>
     <body>
-        <h1> Welcome </h1>
+        <h1>New Account Options</h1>
         <form action='account' method='POST'>
             <p>Please enter information for new account</p>
             <table>
+                <tr>
+                    <td>first_name</td>
+                    <td><input type='text' name='first_name'/></td>
+                </tr>
+                <tr>
+                    <td>last_name</td>
+                    <td><input type='text' name='last_name'/></td>
+                </tr>
                 <tr>
                     <td>email</td>
                     <td><input type='text' name='email'/></td>
@@ -19,6 +27,28 @@
                 </tr>
             </table>
 
+            <br/>
+            <p>After account creation, set new account roles to include:</p>
+            <table>
+                <tr>
+                    <td>access_on_verify</td>
+                    <td><input type="checkbox" name="access_on_verify"/></td>
+                </tr>
+                <tr>
+                    <td>patient</td>
+                    <td><input type="checkbox" name="patient"/></td>
+                </tr>
+                <tr>
+                    <td>promote_without_identity_challenge</td>
+                    <td><input type="checkbox" name="promote_without_identity_challenge"/></td>
+                </tr>
+                <tr>
+                    <td>write_only</td>
+                    <td><input type="checkbox" name="write_only"/></td>
+                </tr>
+            </table>
+
+            <br/>
             <p>After account creation, use access URL or send to /oauth/authorize?</p>
             <table>
                 <tr>
