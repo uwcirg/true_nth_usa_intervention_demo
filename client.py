@@ -330,6 +330,7 @@ def account():
 def create_account(**kwargs):
     """Create remote account using service token"""
 
+
     # validate service token
     token_status = service_request('../oauth/token-status')
     assert token_status.get('expires_in') > 0
@@ -362,15 +363,81 @@ def create_account(**kwargs):
                         {"system": "email", "value": kwargs.get('email')}
                     ],
                    }
+
+    if kwargs.get('practitioner_npi'):
+        refs = []
+        refs.append({
+            "reference":
+                "practitioner/{}?system=http://hl7.org/fhir/sid/us-npi".format(
+                    kwargs.get('practitioner_npi')
+                )})
+        if kwargs.get('organization_id'):
+            refs.append({
+                "reference":
+                    "organization/{}".format(kwargs.get('organization_id'))
+            })
+        demographics['careProvider'] = refs
     results = service_request(
         'demographics/{}'.format(user_id), payload=demographics, method='PUT')
 
-    # Transition the user to a TrueNTH page explaining value prop
-    # asking them to set a p/w - in other words, invite them to create
-    # an account, then merge in all the data from the write_only account
-    # used above
-    results = service_request('user/{}/access_url'.format(user_id))
-    return redirect(results.get('access_url'))
+    if kwargs.get('consent'):
+        # Post consent to same organization
+        org_id = kwargs.get('organization_id')
+        assert (org_id)
+        d = {'organization_id': org_id, 'agreement_url': 'http://phoney.org'}
+        results = service_request('user/{}/consent'.format(user_id), method='POST', payload=d)
+
+    if kwargs.get('biopsy'):
+        # Avoiding shortcut 'biopsy' API to simulate MUSIC's use
+        d = {
+            'resourceType': 'Observation',
+            'code': {"coding": [{"code": "111", "system": "http://us.truenth.org/clinical-codes"}]},
+            'issued': "2018-03-17",
+            'valueQuantity': {'units': 'boolean', 'value': 1}}
+        results = service_request(
+            'patient/{}/clinical'.format(user_id), method='POST', payload=d)
+
+    if kwargs.get('pca'):
+        d = {'value': 'true'}
+        results = service_request(
+            'patient/{}/clinical/pca_diag'.format(user_id), method='POST', payload=d)
+
+    if kwargs.get('localized'):
+        d = {'value': 'true'}
+        results = service_request(
+            'patient/{}/clinical/pca_localized'.format(user_id), method='POST', payload=d)
+
+    if kwargs.get('procedure'):
+        d = {
+            'resourceType': "Procedure",
+            'subject': {'reference': "Patient/{}".format(user_id)},
+            'code': {'coding': [{"code": "999", "system": "http://us.truenth.org/clinical-codes"}]},
+            'performedDateTime': "2018-03-16"}
+        results = service_request(
+            'procedure', method='POST', payload=d)
+
+    if kwargs.get('intervention_access'):
+        # grant user access to the named intervention
+        data = {'access': 'granted', 'user_id': user_id}
+        results = service_request(
+            'intervention/{i_name}'.format(
+                i_name=kwargs.get('intervention_access')), payload=data, method='PUT')
+    if kwargs.get('post_user_doc'):
+        # grant user access to the named intervention
+        pdf = open('/tmp/worldcookery.pdf', 'rb')
+        results = service_request(
+            'user/{user_id}/patient_report'.format(
+                user_id=user_id), files={'file': pdf}, method='POST')
+
+    if kwargs.get('access_url'):
+        # generate access url and redirect to that target
+        results = service_request('user/{}/access_url'.format(user_id))
+        return redirect(results.get('access_url'))
+    else:
+        # generate invite email and display contents
+        results = service_request(
+            url='user/{}/invite?preview=True'.format(user_id), method='POST')
+        return jsonify(results=results)
 
 
 @app.route('/auth_suspend_queries')

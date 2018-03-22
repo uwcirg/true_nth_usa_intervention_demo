@@ -25,6 +25,10 @@
                     <td>organization id</td>
                     <td><input type='text' name='organization_id'/></td>
                 </tr>
+                <tr>
+                    <td>practitioner NPI</td>
+                    <td><input type='text' name='practitioner_npi'/></td>
+                </tr>
             </table>
 
             <br/>
@@ -46,13 +50,41 @@
                     <td>write_only</td>
                     <td><input type="checkbox" name="write_only"/></td>
                 </tr>
+                <tr>
+                    <td>user_doc</td>
+                    <td><input type="checkbox" name="post_user_doc"/></td>
+                </tr>
+                <tr>
+                    <td>grant access to intervention name (leave blank to ignore)</td>
+                    <td><input type="text" name="intervention_access"/></td>
+                </tr>
+                <tr>
+                    <td>consent with same org</td>
+                    <td><input type="checkbox" name="consent"/></td>
+                </tr>
+                <tr>
+                    <td>PCa Dx</td>
+                    <td><input type="checkbox" name="pca"/></td>
+                </tr>
+                <tr>
+                    <td>Biopsy</td>
+                    <td><input type="checkbox" name="biopsy"/></td>
+                </tr>
+                <tr>
+                    <td>PCa Localized</td>
+                    <td><input type="checkbox" name="localized"/></td>
+                </tr>
+                <tr>
+                    <td>None Procedure Started</td>
+                    <td><input type="checkbox" name="procedure"/></td>
+                </tr>
             </table>
 
             <br/>
-            <p>After account creation, use access URL or send to /oauth/authorize?</p>
+            <p>After account creation, use access URL or show email?</p>
             <table>
                 <tr>
-                    <td>Redirect to access URL</td>
+                    <td>Redirect to access URL (not set shows email)</td>
                     <td><input type="checkbox" name="access_url"/></td>
                 </tr>
             <tr>
