@@ -64,6 +64,7 @@ def validate_remote_token():
 
     """
     if 'remote_oauth' not in session:
+        app.logger.info('no remote_oauth in session')
         return 0
 
     token_status = remote.get('../oauth/token-status')
@@ -99,7 +100,7 @@ def login():
     next_url = request.args.get('next') or request.referrer or request.url
     app.logger.debug(">>> remote call to authorize with next=%s", next_url)
     return remote.authorize(
-        callback=url_for('authorized' , _external=True),
+        callback=url_for('authorized', _external=True),
         next=next_url
     )
 
@@ -118,8 +119,7 @@ def index():
         demographics = remote.get('demographics').data
     else:
         token, demographics = None, None
-        query_args['login_url'] = urllib.quote("http://{0}{1}".\
-                format(app.config['SERVER_NAME'], url_for('login')))
+        query_args['login_url'] = url_for('login', _external=True)
         if include_wisercare_args:
             query_args['brand'] = 'wisercare'
             query_args['disable_links'] = '1'
@@ -456,6 +456,11 @@ def auth_suspend_queries():
         callback=url_for('authorized', _external=True),
         next=next_url,
         suspend_initial_queries=True)
+
+
+@app.route('/register-now')
+def registernow():
+    return service_request('user/register-now')
 
 
 if __name__ == '__main__':
